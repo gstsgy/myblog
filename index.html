@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Welcome To XH Blog!</title>
+    <style type="text/css">
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        #particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+        .full-height {
+            background-color: #fff;
+            color: #6289ad;
+            font-family:"arial black",serif;
+            font-weight: 100;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .full-height {
+            height: 100vh;
+        }
+
+        .flex-center {
+            align-items: center;
+            display: flex;
+            justify-content: center;
+        }
+
+        .position-ref {
+            position: relative;
+        }
+
+        .top-right {
+            position: absolute;
+            right: 10px;
+            top: 18px;
+        }
+
+        .content {
+            text-align: center;
+            z-index: 100;
+            margin-bottom: 15vh;
+        }
+
+        .title {
+            font-size: 84px;
+        }
+
+        .description {
+            margin: 30px 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .links > a {
+            color: #9caebf;
+            padding: 0 25px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: .1rem;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+
+        .links > a:hover {
+            color: #52697f;
+        }
+
+        .m-b-md {
+            margin-bottom: 30px;
+        }
+
+        .avatar {
+            width: 120px !important;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+<div class="flex-center position-ref full-height">
+    <canvas id="particles"></canvas>
+    <div class="content">
+        <div class="title m-b-md">
+            <img class="avatar" src="img/head.jpg" alt="XH">
+        </div>
+
+        <div class="description">
+            白驼山
+        </div>
+
+        <div class="links">
+            <a href="/article">Blog</a>
+            <a href="/share">Share</a>
+            <a target="_blank" href="https://weibo.com/gstsgy">Weibo</a>
+            <a target="_blank" href="https://github.com/gstsgy">GitHub</a>
+            <a href="/about">Me</a>
+            <a href="/donate">Donate</a>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function Particle(option) {
+        option = option || {
+            color: '#000',
+            radius: 10,
+            x: 0,
+            y: 0,
+            speedX: 1,
+            speedY: 1
+        };
+
+        this.color = option.color;
+        this.radius = option.radius;
+        this.x = option.x;
+        this.y = option.y;
+        this.speedX = option.speedX;
+        this.speedY = option.speedY;
+    }
+
+    Particle.prototype.draw = function(ctx) {
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    function drawLine(ctx, startPoint, endPoint) {
+        ctx.strokeStyle = '#ddd';
+        ctx.beginPath();
+        ctx.moveTo(startPoint.x, startPoint.y);
+        ctx.lineTo(endPoint.x, endPoint.y);
+        ctx.closePath();
+        ctx.stroke();
+    }
+
+    var eleCanvas = document.getElementById("particles"),
+        width = eleCanvas.width = window.innerWidth,
+        height = eleCanvas.height = window.innerHeight,
+        ctx = eleCanvas.getContext("2d"),
+        density = 150 * 150, //一个点占多少平方像素
+        nums = Math.round(width * height / density);
+
+    var ParticleManager = {
+        particles: [],
+        createParticles: function(nums, width, height) {
+            if(this.particles.length > 0) {
+                this.particles = [];
+            }
+            for(var i = 0; i < nums; i++) {
+                this.particles.push(new Particle({
+                    color: '#ddd',
+                    radius: 4,
+                    x: Math.round(Math.random() * width),
+                    y: Math.round(Math.random() * height),
+                    speedX: (Math.random() - Math.random()) * 0.5,
+                    speedY: (Math.random() - Math.random()) * 0.25
+                }));
+            }
+        },
+        drawParticles: function(ctx) {
+            var that = this;
+            this.particles.forEach(function(ele) {
+                ele.draw(ctx);
+                console.log(that.particles.length)
+                for(var i = that.particles.length - 1; i > 0; i--) {
+                    if(i > that.particles.length / 10 && i < 8 * that.particles.length / 10) {
+                        var p2 = that.particles[i];
+                        var a = ele.x - p2.x
+                        var b = ele.y - p2.y
+                        var dist = Math.sqrt((a * a) + (b * b)).toFixed(2);
+                        if(dist < height / 5) {
+                            drawLine(ctx, ele, p2);
+                        }
+                    }
+
+                }
+            });
+        },
+        updateParticles: function(ctx, width, height) {
+            this.particles.map(function(ele) {
+                ele.x = ele.x + ele.speedX;
+                ele.y = ele.y + ele.speedY;
+                if(ele.x > width || ele.x < 0) {
+                    ele.speedX = -ele.speedX;
+                }
+
+                if(ele.y > height || ele.y < 0) {
+                    ele.speedY = -ele.speedY;
+                }
+                return ele;
+            });
+            ctx.clearRect(0, 0, width, height);
+            this.drawParticles(ctx);
+
+        }
+    };
+
+    function animation() {
+        ParticleManager.updateParticles(ctx, width, height);
+        window.requestAnimationFrame(animation);
+    }
+
+    window.addEventListener('resize', function() {
+        width = eleCanvas.width = window.innerWidth;
+        height = eleCanvas.height = window.innerHeight;
+        nums = Math.round(width * height / density);
+        ParticleManager.createParticles(nums, width, height);
+    });
+
+    ParticleManager.createParticles(nums, width, height);
+    ParticleManager.drawParticles(ctx)
+    animation();
+</script>
+</body>
+</html>
